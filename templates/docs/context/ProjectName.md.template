@@ -1,0 +1,120 @@
+# {ProjectName}
+
+> Technical manifest. Single source of truth for static technical facts about
+> the project. Audience: AI agents that need deep domain understanding, and
+> developers onboarding to the codebase. See
+> `shared-docs/PROJECT_DOCUMENTATION_STANDARD.md` for the spec this template
+> implements.
+
+---
+
+## 1. Project Overview
+
+- **Problem:** {what user pain are you solving}
+- **Solution:** {how the project solves it}
+- **Target users:** {who uses this}
+- **Current stage:** {pre-launch / private beta / live / etc.}
+
+## 2. Tech Stack
+
+| Component       | Technology                  | Notes                          |
+| --------------- | --------------------------- | ------------------------------ |
+| Frontend        | {framework + language}      | {styling, state, routing}      |
+| Backend         | {framework + language}      | {API style, async model}       |
+| Database        | {provider + engine}         | {schema mgmt, RLS, etc.}       |
+| Auth            | {provider}                  | {strategy: session / JWT / OAuth} |
+| Hosting         | {platform}                  | {region(s)}                    |
+| AI services     | {providers}                 | {what each is used for}        |
+
+**External services:**
+
+| Service       | Purpose                  | Notes                       |
+| ------------- | ------------------------ | --------------------------- |
+| {service}     | {purpose}                | {API limits, cost notes}    |
+| {service}     | {purpose}                | {API limits, cost notes}    |
+
+## 3. Critical Constraints
+
+> Number these. The same numbering must appear in `CLAUDE.md` (trigger table),
+> `AGENTS.md` (constraints summary), and (if you split details into files)
+> `.claude/docs/0X-*.md`.
+
+| #   | Constraint            | Rule                                    | Impact if violated     |
+| --- | --------------------- | --------------------------------------- | ---------------------- |
+| 01  | {Constraint name}     | {what must always or never happen}      | {what breaks}          |
+| 02  | {Constraint name}     | {what must always or never happen}      | {what breaks}          |
+| ... | ...                   | ...                                     | ...                    |
+
+## 4. Project Structure
+
+```
+{ProjectName}/
+├── {dir}/             # {what lives here}
+├── {dir}/             # {what lives here}
+├── ...
+└── {dir}/             # {what lives here}
+```
+
+## 5. Key Concepts & Domain Logic
+
+> The most project-specific section. Subsections vary by domain. Capture core
+> entities, workflows, business rules, and the algorithms that make the
+> product work.
+
+### {Concept / Workflow 1}
+
+{Description, key entities involved, edge cases, why it works this way.}
+
+### {Concept / Workflow 2}
+
+{Description.}
+
+## 6. API Endpoints
+
+| Method | Path                  | Description              |
+| ------ | --------------------- | ------------------------ |
+| GET    | `{path}`              | {description}            |
+| POST   | `{path}`              | {description}            |
+| ...    | ...                   | ...                      |
+
+## 7. Database Schema
+
+> Include actual DDL, not just entity sketches. Cover types, constraints,
+> access policies, triggers, indexes.
+
+```sql
+-- {Table description}
+CREATE TABLE {table_name} (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     uuid NOT NULL REFERENCES users(id),
+  ...
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+-- Access policies
+{...}
+
+-- Indexes
+{...}
+```
+
+## 8. Key Files
+
+| File                  | Purpose                              |
+| --------------------- | ------------------------------------ |
+| `{path}`              | {what lives here}                    |
+| `{path}`              | {what lives here}                    |
+| ...                   | ...                                  |
+
+## 9. Known Issues & Technical Debt
+
+- **{Issue / debt item}:** {description, why it exists, suggested fix}
+- **{Issue / debt item}:** {description}
+
+## 10. External Resources
+
+| Resource              | Link                                 |
+| --------------------- | ------------------------------------ |
+| {API docs}            | {URL}                                |
+| {Design system docs}  | {URL}                                |
+| ...                   | ...                                  |

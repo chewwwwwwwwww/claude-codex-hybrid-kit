@@ -1,0 +1,58 @@
+# {NN}-{constraint-slug}: {Constraint Name}
+
+> One file per critical constraint. Lives in `.claude/docs/{NN}-*.md`. The
+> README in `.claude/docs/` indexes these by trigger keywords. Constraints
+> simple enough for a one-line summary can stay in the manifest §3 instead.
+
+---
+
+## Rule
+
+{Short, declarative statement of the rule. Should be obvious enough that a
+reviewer can flag a violation without re-reading the rest of this file.}
+
+Examples:
+
+- "Never store {sensitive field} on a user-writable record."
+- "Always validate webhook signatures using the raw request body before parsing."
+- "{Component A} owns {responsibility A} only; {Component B} owns
+  {responsibility B} only. Never cross."
+
+## Why This Rule Exists
+
+{The historical or product reason. What incident or design decision created
+this constraint? Without this section the rule looks arbitrary, and a
+sufficiently smart agent will find a way to violate it "cleverly".}
+
+## Good vs Bad
+
+### ✅ Good
+
+```{language}
+{Code example showing the right way}
+```
+
+### ❌ Bad
+
+```{language}
+{Code example showing the wrong way}
+```
+
+{One sentence on why the bad version is bad.}
+
+## Common Mistakes
+
+- {Mistake 1 — what tripped someone up before}
+- {Mistake 2}
+- {Mistake 3}
+
+## Verification
+
+- {How to verify the rule isn't being violated — a grep, a test, a
+  pre-commit check, a runtime assertion}
+- {Another verification path}
+
+## Related
+
+- {Other constraint docs that interact with this one}
+- {External resources / RFCs / vendor docs explaining the underlying issue}

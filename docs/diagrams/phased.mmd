@@ -1,0 +1,27 @@
+sequenceDiagram
+    autonumber
+    participant User
+    participant S1 as Session 1 (Claude)
+    participant S2 as Session 2 (Claude)
+    participant S3 as Session 3 (Claude)
+    participant S4 as Session 4 (Claude)
+    participant S5 as Session 5 (Claude)
+    participant File as issue-N.md
+
+    User->>S1: /implement-phase #N
+    S1->>File: Implementation Notes
+    S1-->>User: done; close VS Code
+    User->>S2: /critic-phase #N (fresh context)
+    S2->>File: Critic Review
+    S2-->>User: status; decide; close
+    opt sensitive feature
+        User->>S3: /security-phase #N (fresh context)
+        S3->>File: Security Review
+        S3-->>User: status; decide; close
+    end
+    User->>S4: /test-phase #N (fresh context)
+    S4->>File: Test Results + Manual Test Plan
+    S4-->>User: status; decide; close
+    User->>S5: /commit-phase #N (fresh context)
+    S5->>File: Verification & Commit
+    S5-->>User: committed, issue closed

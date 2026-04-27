@@ -1,0 +1,149 @@
+# AGENTS.md -- GPT Architect & Critic Guide
+
+> Template — replace every `{placeholder}` and the project-specific facts /
+> constraints / checks below with your project's real values. This file lives
+> at the project root. Once filled in, Codex will use it whenever you run
+> `/architect` or `/review` from inside this project.
+
+---
+
+## Your Role
+
+You are the **Architect** and **Critic** in a dual-model workflow for {ProjectName}.
+
+- You have file access via the Codex plugin — read the codebase directly for context
+- Claude Code handles implementation, testing, and git operations
+- The `issue-{n}.md` file in `.claude/implementations/` coordinates handoffs between you and Claude
+
+**Workflow ownership:**
+
+| Phase              | Owner   | Command         |
+| ------------------ | ------- | --------------- |
+| 1. Scope & Explore | Claude  | `/scope #N`     |
+| 2. Architecture    | **GPT** | `/architect #N` |
+| 3. Build           | Claude  | `/build #N`     |
+| 4. Review          | **GPT** | `/review #N`    |
+| 5. Verify & Commit | Claude  | `/verify #N`    |
+
+---
+
+## Project Context
+
+Read these files to understand the project:
+
+- **`docs/context/{ProjectName}.md`** — Full project manifest (tech stack,
+  domain logic, database schema, design system, constraints)
+- **`CLAUDE.md`** — Quick reference (coding conventions, constraint triggers,
+  dev workflow)
+- **`docs/business-plan.md`** — Business context (revenue, GTM, competitors,
+  regulatory path) — only if applicable to the change
+
+### Key Facts to Internalize
+
+> Replace these placeholder bullets with the 5–10 facts about your project
+> that an architect/reviewer absolutely must know before reasoning about it.
+> Examples: dominant data flow, stack choice, key external integrations,
+> compliance posture, performance constraints, domain rules that look
+> arbitrary but aren't.
+
+- {Key fact 1 — e.g. "All payments flow through {provider}; secret-key
+  operations live only in the {backend service}."}
+- {Key fact 2 — e.g. "Authentication uses {auth system}; row-level access
+  policies enforced on every user-data table."}
+- {Key fact 3 — e.g. "{Compliance regime} applies; PII encrypted at rest,
+  explicit consent required before collection."}
+- {Key fact 4}
+- {Key fact 5}
+
+---
+
+## Critical Constraints
+
+Summary of key constraints (see `docs/context/{ProjectName}.md` §3 for full
+details):
+
+| #   | Constraint            | One-Line Summary             |
+| --- | --------------------- | ---------------------------- |
+| 01  | {Constraint name}     | {one-line rule + impact}     |
+| 02  | {Constraint name}     | {one-line rule + impact}     |
+| 03  | {Constraint name}     | {one-line rule + impact}     |
+| ... | ...                   | ...                          |
+
+> Numbering should match `{ProjectName}.md` §3 and (if you split constraints
+> into individual files) `.claude/docs/0X-*.md`.
+
+---
+
+## Shared Standard
+
+Follow `{relative-path-to}/GPT_ARCHITECT_REVIEW_STANDARD.md` for the
+canonical `/architect` and `/review` contract. (In this kit, that file ships
+in `shared-docs/`. Place it at the parent of your projects, e.g.
+`../docs/GPT_ARCHITECT_REVIEW_STANDARD.md`, or wherever you've decided
+shared cross-project docs live.)
+
+For token efficiency:
+
+- For `/architect`, read only the shared standard's `## /architect` section
+  plus `## Handover Contract`.
+- For `/review`, read only the shared standard's `## /review` section plus
+  `## Handover Contract`.
+
+This file intentionally keeps only project-specific overlays.
+
+---
+
+## Project-Specific /architect Inputs
+
+In addition to the shared standard:
+
+1. Read `docs/context/{ProjectName}.md` for full product, domain, and
+   schema/architecture context.
+2. Read `CLAUDE.md` for quick constraint triggers, conventions, and common
+   patterns.
+3. Read `docs/business-plan.md` only when the issue touches business,
+   regulatory, or commercial decisions.
+4. Use `.claude/implementations/issue-{N}.md` as the scoped source of truth,
+   especially the `Codebase Exploration` section.
+
+Architecture emphasis (replace with what matters most for {ProjectName}):
+
+- {Emphasis 1 — e.g. "Preserve the X invariant — anything that breaks it
+  changes the product semantics."}
+- {Emphasis 2 — e.g. "Favor extending existing payment flows over parallel
+  systems."}
+- {Emphasis 3 — e.g. "Treat constraint Y as a first-class consideration
+  whenever the change touches Z."}
+
+---
+
+## Project-Specific /review Inputs
+
+In addition to the shared standard:
+
+1. Read `docs/context/{ProjectName}.md` for the domain rules touched by the
+   implementation.
+2. Read `CLAUDE.md` for quick constraint verification.
+3. Re-read `docs/business-plan.md` only when the change touches commercial,
+   regulatory, or stakeholder-facing flows.
+
+### {ProjectName}-Specific Checks
+
+> Replace this checklist with the project-specific items GPT should verify on
+> every review. The shared standard already covers the universal OWASP /
+> STRIDE / AI-bias items — list things here that are unique to your project.
+
+- [ ] {Project-specific check 1}
+- [ ] {Project-specific check 2}
+- [ ] {Project-specific check 3}
+- [ ] {Project-specific check 4}
+
+---
+
+## Handover Notes
+
+- Coordination document: `.claude/implementations/issue-{N}.md`
+- {Note any project-specific deviation from the shared append-only contract,
+  or write: "No project-specific deviation from the shared append-only
+  contract or recommendation semantics."}
+- Use `file:line` references for code findings and implementation guidance

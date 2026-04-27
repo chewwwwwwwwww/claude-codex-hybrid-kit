@@ -1,0 +1,70 @@
+# {ProjectName} — Business Plan
+
+> Audience: founders, investors, stakeholders. All business context
+> (revenue, GTM, competitors, regulatory, team, funding) lives here, not in
+> the technical manifest.
+
+---
+
+## Executive Summary
+
+{2–4 paragraphs: what the product is, who it's for, why it'll win,
+what stage it's at, what funding/runway looks like.}
+
+## Problem & Solution
+
+### Problem
+
+{Narrative description of the user pain. Concrete, not abstract.}
+
+### Solution
+
+{How the product addresses the pain. High-level — technical detail belongs
+in `docs/context/{ProjectName}.md`.}
+
+## Market Analysis
+
+- **TAM:** {total addressable market estimate, with source}
+- **SAM:** {serviceable addressable market}
+- **SOM:** {serviceable obtainable market — realistic 3-year capture}
+- **Trends:** {market dynamics that favor or threaten the product}
+
+## Competitive Landscape
+
+| Competitor       | Strengths            | Weaknesses           | Our differentiation |
+| ---------------- | -------------------- | -------------------- | ------------------- |
+| {Competitor}     | {strengths}          | {weaknesses}         | {how we win}        |
+| {Competitor}     | {strengths}          | {weaknesses}         | {how we win}        |
+
+## Revenue Model
+
+- **Pricing:** {tiers / per-unit / freemium / ad-supported / etc.}
+- **Unit economics:** {CAC, LTV, gross margin, payback period}
+- **Projections:** {12-month / 36-month revenue projection summary}
+
+## Go-To-Market Strategy
+
+- **Phase 1:** {who, how, when}
+- **Phase 2:** {who, how, when}
+- **Phase 3:** {who, how, when}
+
+## Regulatory Path
+
+{Compliance regimes that apply (PCI, HIPAA, GDPR, PDPA, sector-specific
+regulators) and how the product satisfies each.}
+
+## Risk Analysis
+
+- **{Risk}:** {likelihood × impact, mitigation}
+- **{Risk}:** {likelihood × impact, mitigation}
+
+## Team & Hiring Plan
+
+| Role             | Status          | Notes                  |
+| ---------------- | --------------- | ---------------------- |
+| {role}           | {filled / hire} | {when, why}            |
+
+## Funding Strategy
+
+{Bootstrapped / pre-seed / seed / Series A. Current runway, next milestone,
+funding ask if any.}

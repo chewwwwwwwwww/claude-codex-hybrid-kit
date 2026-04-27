@@ -1,0 +1,29 @@
+sequenceDiagram
+    autonumber
+    participant User
+    participant Claude as Claude Code
+    participant File as issue-N.md
+    participant Codex
+
+    User->>Claude: /scope #N
+    Claude->>Claude: AskUserQuestion alignment
+    Claude->>File: Original Requirements + Codebase Exploration
+    File-->>User: scope ready
+    User->>Codex: /architect #N
+    Codex->>File: Architecture Plan - Attempt 1
+    Codex-->>User: READY TO BUILD
+    loop until APPROVE
+        User->>Claude: /build #N
+        Claude->>File: Implementation Notes - Attempt N
+        Claude-->>User: build done
+        User->>Codex: /review #N
+        Codex->>File: GPT Review - Attempt N
+        Codex-->>User: APPROVE / REQUEST CHANGES / BLOCK
+    end
+    User->>Claude: /verify #N
+    Claude->>Claude: address remaining issues, run tests
+    Claude->>Claude: generate Manual Test Plan
+    Claude-->>User: ━ HITL: walk through manual plan ━
+    User->>Claude: signed off
+    Claude->>File: Verification & Commit
+    Claude-->>User: committed, issue closed

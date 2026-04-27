@@ -1,0 +1,171 @@
+# CLAUDE.md — {ProjectName}
+
+> **Project facts** (tech stack, domain logic, schema, design system): `docs/context/{ProjectName}.md`
+> **Business plan** (revenue, GTM, competitors, regulatory): `docs/business-plan.md`
+> **GPT hybrid workflow guide**: `AGENTS.md`
+
+---
+
+## Project at a Glance
+
+**{ProjectName}** is {one-sentence project description — what it does, for whom}.
+
+- **Stack:** {frontend framework} + {backend framework} + {database/auth} + {payments / external services}
+- **AI services:** {AI providers used, if any — e.g. "OpenAI for embeddings, Anthropic for chat"}
+- **Key features:** {3–5 headline features}
+- **Deploy:** {hosting platform(s)} — {region(s)}
+- **Full docs:** `docs/context/{ProjectName}.md` (architecture, domain logic, database schema, design system)
+
+### Critical Constraints Quick Trigger
+
+When working in these areas, check the corresponding manifest section (and
+`.claude/docs/0X-*.md` if you split constraints into individual files):
+
+| Trigger Keywords            | Manifest Section / Doc | Core Rule                |
+| --------------------------- | ---------------------- | ------------------------ |
+| {keyword1}, {keyword2}      | §3 #01                 | {one-line rule}          |
+| {keyword1}, {keyword2}      | §3 #02                 | {one-line rule}          |
+| {keyword1}, {keyword2}      | §3 #03                 | {one-line rule}          |
+| ...                         | ...                    | ...                      |
+
+---
+
+## Project-Specific Conventions
+
+> General coding conventions (TypeScript, React, Python, file naming,
+> DRY/SOLID) are in the global `~/.claude/CLAUDE.md`. List **only**
+> overrides or project-unique items below.
+
+### {Language / Stack Override 1}
+
+- {convention or override}
+- {convention or override}
+
+### {Language / Stack Override 2}
+
+- {convention or override}
+
+### Testing
+
+```bash
+# Backend tests
+{backend test command}
+
+# Frontend tests
+{frontend test command}
+
+# Type check
+{typecheck command}
+
+# Lint
+{lint command}
+```
+
+Target {coverage target}% coverage for critical paths ({list critical paths}).
+
+### Test Accounts (for /verify and /test-phase manual test plans)
+
+> If your project has multiple account types (roles, tiers, personas), declare
+> them here so the manual-test-plan generator can auto-pick. Otherwise just
+> name the default test account.
+
+- **Default:** {account label} — credentials in env vars
+  `{ENV_VAR_EMAIL}` / `{ENV_VAR_PASSWORD}`
+- **{Other type}:** {account label} — used when changes touch {tutor-only /
+  admin-only / etc.} surfaces
+
+### Dev URL
+
+- {http://localhost:3000 or your project's dev URL}
+
+### Git Workflow
+
+- **Commit format:** {Conventional Commits, [#issue] prefix, etc.}
+- **Branch naming:** `feature/description`, `fix/description`
+
+---
+
+## Common Patterns
+
+Reference these files for canonical examples of each pattern:
+
+| Pattern                | Reference File                                |
+| ---------------------- | --------------------------------------------- |
+| {Pattern name}         | `{file path}`                                 |
+| {Pattern name}         | `{file path}`                                 |
+| ...                    | ...                                           |
+
+---
+
+## Development Workflow
+
+### Initial Setup
+
+```bash
+# Clone repository
+git clone <repo-url>
+cd {ProjectName}
+
+# {Each component}
+cd {component-dir} && {install command}
+
+# Environment variables
+cp .env.example .env
+# Fill in: {list required env vars}
+```
+
+### Running Locally
+
+```bash
+# Terminal 1: {service}
+{run command}
+
+# Terminal 2: {service}
+{run command}
+```
+
+### Common Tasks
+
+```bash
+# Run backend tests
+{backend test command}
+
+# Run frontend tests
+{frontend test command}
+
+# Type checking
+{typecheck command}
+
+# Linting
+{lint command}
+```
+
+### Database Migrations
+
+> Declare the migration directory and apply command here so /verify's
+> migration check can run automatically.
+
+- **Migration dir:** `{e.g. supabase/migrations/, prisma/migrations/, alembic/versions/}`
+- **Apply command:** `{e.g. supabase db push, prisma migrate deploy, alembic upgrade head}`
+- **List-applied command/MCP:** `{how to enumerate applied migrations}`
+
+### Deployment
+
+- {Platform 1}: {brief}
+- {Platform 2}: {brief}
+
+---
+
+## Multi-Agent Workflow
+
+This project uses the hybrid dual-model approach for substantial implementations:
+
+1. `/scope` — Define the problem, acceptance criteria, and affected files (Claude)
+2. `/architect` — Design the architecture and implementation plan (GPT)
+3. `/build` — Implement the changes following the conventions above (Claude)
+4. `/review` — Code review and security analysis (GPT)
+5. `/verify` — Run tests, lint, and confirm constraints are satisfied (Claude)
+
+**GPT hybrid workflow guide:** `AGENTS.md`
+**Master workflow doc:** `~/.claude/WORKFLOW.md` (single-session orchestrator,
+phase mode, troubleshooting)

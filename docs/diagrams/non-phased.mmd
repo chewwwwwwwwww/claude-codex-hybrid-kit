@@ -1,0 +1,26 @@
+sequenceDiagram
+    autonumber
+    participant User
+    participant Claude as Claude Code
+    participant File as issue-N.md
+
+    User->>Claude: /implement
+    Claude->>File: Create issue file
+    Claude->>Claude: Implementation Agent: code + tests
+    Claude->>File: Implementation Notes - Attempt 1
+    Claude->>Claude: Critic Agent: review quality + constraints
+    Claude->>File: Critic Review
+    Claude-->>User: ━ CHECKPOINT 1 ━
+    User->>Claude: continue
+    alt high-risk files changed
+        Claude->>Claude: Security Agent: OWASP + STRIDE
+        Claude->>File: Security Review
+        Claude-->>User: ━ CHECKPOINT 2 ━
+        User->>Claude: continue
+    end
+    Claude->>Claude: Testing Agent: run suite + criteria
+    Claude->>File: Test Results
+    Claude-->>User: ━ CHECKPOINT 3 ━
+    User->>Claude: /commit #N
+    Claude->>File: Verification & Commit
+    Claude-->>User: committed, issue closed
