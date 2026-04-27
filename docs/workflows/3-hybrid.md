@@ -203,3 +203,12 @@ isn't worth the IDE-switching overhead for this particular feature.
 ## Stay in hybrid when
 
 Default. Make the user explicitly choose another mode for a reason.
+
+## See it end-to-end
+
+[`templates/implementations/sample-issue-1.md`](../../templates/implementations/sample-issue-1.md)
+is a worked example showing every section a hybrid-mode issue file
+accumulates: Original Requirements → Codebase Exploration → Architecture
+Plan → Implementation Notes → GPT Review → Implementation Notes (Attempt 2) → GPT Review (Attempt 2) → Verification & Commit. Read it before
+running your first hybrid issue — it makes the section-ownership and
+append-only contract concrete.

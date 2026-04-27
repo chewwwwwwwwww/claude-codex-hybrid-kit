@@ -4,11 +4,12 @@
 
 This project uses a **multi-agent workflow system** for implementing features with high code quality and minimal context window bloat. Instead of doing everything in one long conversation, work is divided across specialized agents with clear handoffs.
 
-## Two Workflow Modes
+## Three Workflow Modes
 
-This system supports two modes of operation to handle different implementation sizes:
+This system supports three modes of operation. Pick by the size and stakes
+of the implementation in front of you.
 
-### Mode 1: Orchestrator Mode (Single Session)
+### Mode 1: Orchestrator Mode (Single Session, Single Model)
 
 **Use for:** Small/medium implementations (<500 lines, no compactions)
 
@@ -18,31 +19,73 @@ This system supports two modes of operation to handle different implementation s
 - Fast and automatic with 3 human checkpoints
 - Perfect for most day-to-day work
 
+**Entry:** `/implement`. Final commit: `/commit #N`.
+
 **When context is sufficient, this is the fastest way to work.**
 
-### Mode 2: Phase Mode (Multi-Session)
+See `docs/workflows/1-non-phased.md` for the full walkthrough.
+
+### Mode 2: Phase Mode (Multi-Session, Single Model)
 
 **Use for:** Large implementations (>500 lines, causing compactions)
 
-- Separate fresh session for each phase
+- Separate fresh Claude Code session for each phase
 - Manual control between phases (you close VS Code between each)
-- Each phase gets fresh 200K token context
+- Each phase gets a fresh 200K-token context
 - No compactions, infinite iterations possible
-- Maximum quality for complex features
+- Maximum quality for complex single-model features
+
+**Entry per phase:** `/implement-phase #N` → `/critic-phase #N` →
+`/security-phase #N` (if needed) → `/test-phase #N` → `/commit-phase #N`.
 
 **When you see "compaction occurred" messages, switch to this mode.**
+
+See `docs/workflows/2-phased.md` for the full walkthrough.
+
+### Mode 3: Hybrid Mode (Dual-Model, Recommended)
+
+**Use for:** Production work, high-stakes features, anything where a
+single-model blind spot would hurt
+
+- Two models in the loop: Claude Code does `/scope`, `/build`, `/verify`;
+  Codex (or another GPT-class model with file access) does `/architect`
+  and `/review`
+- The `issue-{N}.md` file in `.claude/implementations/` is the
+  append-only coordination document between models
+- Build → review loop runs until Codex stamps APPROVE; only two HITL
+  points (`/scope` for alignment, `/verify` for the manual test plan)
+- Catches blind spots that a single model would miss; spreads token
+  usage across providers
+
+**Entry:** `/scope #N` (Claude Code) → `/architect #N` (Codex) →
+`/build #N` (Claude Code) → `/review #N` (Codex) → loop /build → /review
+until APPROVE → `/verify #N` (Claude Code).
+
+**The universal `/architect` and `/review` contract** lives in
+`shared-docs/GPT_ARCHITECT_REVIEW_STANDARD.md`. It uses an "efficient
+read pattern" — Codex loads only `## /architect` + `## Handover Contract`
+when running `/architect`, and only `## /review` + `## Handover Contract`
+when running `/review`. Project `AGENTS.md` files stay small (~120 lines)
+and only carry project-specific overlays.
+
+See `docs/workflows/3-hybrid.md` for the full walkthrough.
 
 ### How to Choose
 
 ```
-Start with Orchestrator Mode (single session)
-↓
-If you see compactions or context warnings
-↓
-Switch to Phase Mode (multi-session)
+Default → Hybrid Mode (Mode 3)
+  ↑
+  ├── Drop to Orchestrator Mode (Mode 1) if the change is small/contained
+  │   and the dual-model overhead isn't worth it for this issue
+  │
+  └── Drop to Phase Mode (Mode 2) if the change is large enough that
+      compactions are an issue but a single model is fine for the scope
 ```
 
-**Rule of thumb:** Orchestrator Mode is default. Phase Mode is for when implementations are large enough to cause context issues.
+**Rule of thumb:** Hybrid is the recommended default for serious work.
+Orchestrator (single-session, single-model) is the right fall-back for
+quick changes. Phase Mode (multi-session, single-model) is for big
+single-model features where compactions would hurt quality.
 
 ## System Architecture
 
@@ -60,19 +103,38 @@ Located in `.claude/agents/`:
 
 Located in `.claude/commands/`:
 
-**Single-Session Commands (Orchestrator Mode):**
+**Single-Session Commands (Orchestrator Mode — Mode 1):**
 
 - **implement.md** - Kickstarts workflow after planning
 - **catchup.md** - Shows current workflow status
 - **commit.md** - Final validation and commit
 
-**Multi-Session Commands (Phase Mode):**
+**Multi-Session Commands (Phase Mode — Mode 2):**
 
 - **implement-phase.md** - Run Implementation Agent in fresh session
 - **critic-phase.md** - Run Critic Agent in fresh session
 - **security-phase.md** - Run Security Agent in fresh session
 - **test-phase.md** - Run Testing Agent in fresh session
 - **commit-phase.md** - Run Commit in fresh session
+
+**Hybrid Commands (Hybrid Mode — Mode 3, dual-model):**
+
+- **scope.md** - Phase 1 (Claude): scope + AskUserQuestion alignment + codebase exploration
+- **build.md** - Phase 3 (Claude): implement architecture plan, write tests
+- **verify.md** - Phase 5 (Claude): address review issues, run full validation, commit
+- `/architect` and `/review` are not separate command files — they live as
+  inline definitions in each project's `AGENTS.md` (overlay) on top of the
+  shared `shared-docs/GPT_ARCHITECT_REVIEW_STANDARD.md` contract.
+
+**Greenfield Inception:**
+
+- **bmad-start.md** - 3-phase BMAD inception (Analyst → PM → Architect)
+- **bmad-synthesize.md** - Synthesize BMAD output into the standard project
+  docs (CLAUDE.md, AGENTS.md, manifest, business plan)
+
+**Maintenance:**
+
+- **update-claude.md** - Keep CLAUDE.md in sync with code changes
 
 ### Supporting Documentation
 
@@ -389,7 +451,9 @@ User: [Closes VS Code]
 Session 2 - Implementation (FRESH):
 User: [Opens fresh VS Code]
 User: [References plan file OR pastes plan]
-User: "/implement" or "/implement-phase"
+User: "/implement" (Mode 1) or "/implement-phase" (Mode 2) or
+      "/scope" (Mode 3 — hybrid; this also creates the issue file
+       and runs alignment via AskUserQuestion)
 ```
 
 **Why fresh session?**
@@ -582,6 +646,111 @@ Skip Security Phase for:
 - ❌ Test files only
 
 **For complete multi-session workflow guide:** See `.claude/MANUAL-SESSION-CHECKLIST.md`
+
+---
+
+#### HYBRID MODE (Dual-Model)
+
+**Use when:** Production work, high-stakes features, anything where a
+single-model blind spot would hurt. Recommended default for serious work.
+
+##### Complete Workflow
+
+```
+Session 0: Planning (optional — /scope handles alignment too)
+User: [Plan feature]
+You: [Create plan, get approval]
+User: [Note file OR copy plan]
+User: [Close VS Code]
+
+Phase 1 (Claude Code, FRESH): /scope
+User: [Reference plan file OR paste plan]
+User: "/scope"
+You: Execute .claude/commands/scope.md
+     → AskUserQuestion alignment (THIS IS A HITL POINT)
+     → Codebase exploration
+     → Constraint check
+     → Optional REQ-XX traceability tags
+     → Create GitHub issue + .claude/implementations/issue-{N}.md
+     → Write Original Requirements + Codebase Exploration sections
+User: [Switch to Codex IDE]
+
+Phase 2 (Codex): /architect #N
+User: "/architect #N"
+Codex:
+     → Read project AGENTS.md
+     → Partial-read shared GPT_ARCHITECT_REVIEW_STANDARD.md (## /architect + ## Handover Contract)
+     → Read source files referenced in Codebase Exploration
+     → Validate scope by exploring related code
+     → Write "## Architecture Plan - Attempt N" to issue file
+     → Recommendation: READY TO BUILD / NEEDS CLARIFICATION / REQUIREMENTS UNCLEAR
+User: [Switch to Claude Code]
+
+Phase 3 (Claude Code): /build #N
+User: "/build #N"
+You: Execute .claude/commands/build.md
+     → Read architecture plan
+     → Implement following plan, document any deviations
+     → Write tests alongside implementation
+     → Run quick smoke validation
+     → Append "## Implementation Notes - Attempt N" to issue file
+User: [Switch to Codex IDE]
+
+Phase 4 (Codex): /review #N
+User: "/review #N"
+Codex:
+     → Read project AGENTS.md
+     → Partial-read shared GPT_ARCHITECT_REVIEW_STANDARD.md (## /review + ## Handover Contract)
+     → Read ONLY the files listed in Implementation Notes (scope rule)
+     → Run `git diff` only on those files
+     → Write "## GPT Review - Attempt N" to issue file
+     → Recommendation: APPROVE / REQUEST CHANGES / BLOCK
+
+IF recommendation is REQUEST CHANGES or BLOCK:
+  Loop /build → /review until APPROVE.
+  Each new /review attempt starts with a Previous Issues Verification
+  table marking each prior issue FIXED / STILL PRESENT / PARTIALLY FIXED.
+
+IF recommendation is BLOCK and the issue needs redesign rather than
+re-implementation, run /architect #N again rather than /build #N.
+
+Phase 5 (Claude Code): /verify #N
+User: "/verify #N"
+You: Execute .claude/commands/verify.md
+     → Address remaining Critical and Important issues from review
+     → Run targeted Security Pre-Check (auth surface, secrets, rate limits)
+     → Verify migrations are applied (if migrations changed)
+     → Run full test suite, type check, lint
+     → Optional browser-automation verification
+     → Generate Manual Test Plan from acceptance criteria
+     → Verify acceptance criteria
+     → Write "## Verification & Commit" to issue file
+     → THIS IS THE SECOND HITL POINT: user walks through manual plan
+       in browser, signs off
+     → Commit, optionally update CLAUDE.md/AGENTS.md/manifest, close
+       GitHub issue, archive issue file
+
+User: git push
+Done! 🎉
+```
+
+Two HITL points only: `/scope` (alignment) and `/verify` (manual test
+plan + sign-off). Everything else (architect → build → review loop) runs
+without human intervention beyond switching IDEs at each phase boundary.
+
+##### Hybrid Mode vs Phase Mode
+
+Both involve switching contexts between phases. The difference:
+
+- **Phase Mode** is the same model in fresh sessions. Solves
+  context-bloat. Doesn't solve same-model blind spots.
+- **Hybrid Mode** is two different models. Solves blind spots
+  (Claude implements, Codex reviews). Token usage spreads across
+  providers. IDE-switching overhead is comparable to Phase Mode.
+
+**For complete hybrid walkthrough:** See `docs/workflows/3-hybrid.md`.
+**For the universal `/architect` + `/review` contract:** See
+`shared-docs/GPT_ARCHITECT_REVIEW_STANDARD.md`.
 
 ---
 
@@ -805,6 +974,128 @@ Always check the actual .md files for latest instructions.
 
 ---
 
+### Hybrid Commands (Hybrid Mode)
+
+**Use for production work, high-stakes features, or anything where a
+single-model blind spot would hurt.** Recommended default.
+
+#### /scope
+
+**File:** `.claude/commands/scope.md`
+**Usage:** `/scope` or `/scope #N`
+**Run in:** Claude Code
+**What it does:**
+
+- Invokes `AskUserQuestion` extensively for product/UX/scope alignment (HITL)
+- Creates a GitHub issue (or local issue) and `.claude/implementations/issue-{N}.md`
+- Reads the project manifest and CLAUDE.md
+- Explores the codebase: relevant files, existing patterns, applicable
+  constraints, security considerations
+- Optionally tags acceptance criteria with REQ-XX traceability tags
+- Writes Original Requirements + Codebase Exploration sections to the issue file
+  **After:** User switches to Codex and runs `/architect #N`
+
+#### /architect (Codex)
+
+**Defined in:** project `AGENTS.md` (overlays) on top of
+`shared-docs/GPT_ARCHITECT_REVIEW_STANDARD.md` (universal contract)
+**Usage:** `/architect #N`
+**Run in:** Codex
+**What it does:**
+
+- Partial-reads the shared standard (`## /architect` + `## Handover Contract`)
+- Reads the source files referenced in Codebase Exploration
+- Validates scope by exploring related code
+- Writes `## Architecture Plan - Attempt N` to the issue file
+- Final recommendation: READY TO BUILD / NEEDS CLARIFICATION / REQUIREMENTS UNCLEAR
+  **After:** User switches to Claude Code and runs `/build #N`
+
+#### /build
+
+**File:** `.claude/commands/build.md`
+**Usage:** `/build #N`
+**Run in:** Claude Code
+**What it does:**
+
+- Reads the architecture plan from the issue file
+- Implements following the plan, documents any deviations
+- Writes tests alongside implementation
+- Runs a quick smoke validation (not the full suite)
+- Appends `## Implementation Notes - Attempt N` to the issue file
+  **After:** User switches to Codex and runs `/review #N`
+
+#### /review (Codex)
+
+**Defined in:** project `AGENTS.md` (overlays) on top of
+`shared-docs/GPT_ARCHITECT_REVIEW_STANDARD.md` (universal contract)
+**Usage:** `/review #N`
+**Run in:** Codex
+**What it does:**
+
+- Partial-reads the shared standard (`## /review` + `## Handover Contract`)
+- Reads ONLY the files listed in Implementation Notes (scope rule — ignores
+  unrelated working-tree changes from other issues)
+- Runs `git diff` only on those files
+- Writes `## GPT Review - Attempt N` to the issue file with categorized
+  findings (🔴 Critical / 🟡 Important / 🟢 Minor), Security Analysis
+  (OWASP + STRIDE + project checks), tests recommended, AI bias
+  observations, REQ-XX traceability verification
+- Final recommendation: APPROVE / REQUEST CHANGES / BLOCK
+  **After:** If APPROVE, user runs `/verify #N` in Claude Code. Otherwise,
+  user loops back to `/build #N` (or `/architect #N` if BLOCK indicates a
+  redesign is needed).
+
+#### /verify
+
+**File:** `.claude/commands/verify.md`
+**Usage:** `/verify #N`
+**Run in:** Claude Code
+**What it does:**
+
+- Addresses Critical and Important issues from the review
+- Runs the Security Pre-Check (auth surface, secrets, rate limits, sensitive
+  API calls, financial controls)
+- Verifies database migrations are applied to the dev DB (if migrations changed)
+- Runs the full test suite, type check, lint
+- Runs browser-automation verification (if available)
+- Generates the Manual Test Plan from acceptance criteria (HITL — user walks
+  through it in a browser and signs off)
+- Verifies acceptance criteria
+- Commits, optionally updates CLAUDE.md / AGENTS.md / manifest, closes the
+  GitHub issue, archives the issue file from `.claude/implementations/`
+  to `.claude/implementations/archive/`
+
+---
+
+### Hybrid Workflow Pattern
+
+```
+Phase 0: Planning (optional)         [Claude Code]
+Phase 1: /scope #N                   [Claude Code, fresh] — HITL: alignment
+         User: switch to Codex IDE
+         ↓
+Phase 2: /architect #N               [Codex]
+         User: switch to Claude Code
+         ↓
+Phase 3: /build #N                   [Claude Code]
+         User: switch to Codex IDE
+         ↓
+Phase 4: /review #N                  [Codex]
+         IF NOT APPROVE:
+           User: switch to Claude Code, loop /build → /review
+         IF APPROVE:
+           User: switch to Claude Code
+         ↓
+Phase 5: /verify #N                  [Claude Code] — HITL: manual test plan
+         User: git push
+         Done!
+
+Two HITL points only: /scope and /verify.
+Everything in between is autonomous; user is the courier between IDEs.
+```
+
+---
+
 ### Multi-Session Workflow Pattern
 
 ```
@@ -844,31 +1135,55 @@ Benefit: No compactions, infinite iterations
 
 ## When to Use Which Mode: Decision Guide
 
-### Choose Orchestrator Mode (Single Session) If:
+### Choose Hybrid Mode (Mode 3 — Recommended Default) If:
+
+- ✅ Production work, high-stakes features
+- ✅ Quality is critical and rework cost is high
+- ✅ You want a second model to review what the first model built
+- ✅ You want to spread token usage across providers
+- ✅ Touching auth, payments, real-time, AI cost-abuse surfaces
+
+### Choose Orchestrator Mode (Mode 1 — Single Session) If:
 
 - ✅ Implementation is <500 lines
 - ✅ No previous compaction issues
 - ✅ Want automatic workflow management
 - ✅ Fast turnaround needed
+- ✅ The dual-model overhead isn't worth it for this issue
 - ✅ Comfortable with context accumulation
 
-### Choose Phase Mode (Multi-Session) If:
+### Choose Phase Mode (Mode 2 — Multi-Session) If:
 
 - ✅ Implementation is >500 lines
 - ✅ Seeing "compaction occurred" warnings
 - ✅ Previous implementations hit context limits
-- ✅ Quality is critical (production code)
-- ✅ Need many iterations
+- ✅ Quality is critical (production code) but hybrid's IDE-switching
+  isn't justified for this particular feature
+- ✅ Need many iterations within a single model
 - ✅ Complex feature with multiple aspects
 
-### How to Tell You Need Phase Mode:
+### How to Tell You Need Phase Mode (vs staying in Orchestrator):
 
 1. You see "context compacted" messages
 2. Later agents (Testing) produce lower quality output
 3. Implementation is obviously large (5+ files, 1000+ lines)
 4. You've tried Orchestrator mode and quality degraded
 
-**General rule:** Start Orchestrator, upgrade to Phase Mode if needed.
+### How to Tell You Want Hybrid (vs staying in Phase Mode):
+
+1. You're seeing the same model approve its own implementation more
+   easily than seems right
+2. Tests written by Implementation Agent feel like they're confirming
+   the implementation rather than verifying the requirement
+3. The change touches a domain (auth, payments, real-time) where
+   getting it wrong costs more than the IDE-switching overhead
+
+**General rules:**
+
+- Default to Hybrid for serious work
+- Drop to Orchestrator for quick changes
+- Drop to Phase Mode for big single-model features where compactions
+  would hurt quality but the dual-model trade-off isn't worth it
 
 ---
 

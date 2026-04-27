@@ -120,7 +120,9 @@ templates/                          # Copy into each project
   │   ├── context/ProjectName.md.template   # Manifest scaffold
   │   └── business-plan.md.template
   ├── constraint-doc.md.template
-  └── implementations/.gitkeep
+  └── implementations/
+      ├── sample-issue-1.md         # Worked example: full hybrid issue file
+      └── archive/.gitkeep
 
 docs/                               # Read here for deeper detail
   ├── journey.md                    # The 5-month story behind this kit
@@ -214,6 +216,10 @@ Full setup walkthrough in [INSTALL.md](INSTALL.md).
 - **The two HITL points** explained in detail: [docs/checkpoints.md](docs/checkpoints.md)
 - **Phase mode step-by-step** for multi-session implementations:
   [MANUAL-SESSION-CHECKLIST.md](MANUAL-SESSION-CHECKLIST.md)
+- **Sample worked issue** — a full hybrid-mode `issue-{N}.md` showing every
+  section across two attempts (Original Requirements → Codebase Exploration →
+  Architecture Plan → Implementation Notes → GPT Review → Verification &
+  Commit): [templates/implementations/sample-issue-1.md](templates/implementations/sample-issue-1.md)
 
 ## Status
 
